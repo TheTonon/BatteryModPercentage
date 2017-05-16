@@ -33,17 +33,22 @@ public class MainActivity extends AppCompatActivity {
 
     public static Process pros;
     public static String gb_battery = "/sys/class/power_supply/gb_battery/";
+    public static String device_battery = "/sys/class/power_supply/battery/";
+
+    public Int battery_limit = 80;
+    
+    public boolean fullCharge = false;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
 
-    public static String readableit(String path, String name){
+    public static String readableit(String path, String name) {
         String value;
-        switch (name){
+        switch (name) {
             case "temp":
-                value = String.valueOf(Double.parseDouble(getdata(path + name))/10)+"℃";
+                value = String.valueOf(Double.parseDouble(getdata(path + name)) / 10) + "℃";
                 break;
             default:
                 value = getdata(path + name);
@@ -51,6 +56,43 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return name + ": " + value;
+    }
+    
+    public static void enable_charging()
+    {
+        Runtime.getRuntime().exec("echo ""1"" > " + device_battery);
+    }
+
+    public static void disable_charging()
+    {
+        Runtime.getRuntime().exec("echo ""0"" > " + device_battery);
+    }
+
+    public static void get_battery_level()
+    {
+        level = Runtime.getRuntime().exec("dumpsys battery | grep level");
+        level = level.replaceAll("\\D+","");
+        levelInt = Integer.parseInt(level)
+        return levelInt
+    }
+
+    public static void effiency_mode()
+    {
+        if (full_charge)
+        {
+            enable_charging();
+            return 0;
+        }
+        else {
+            level = get_battery_level();
+
+            if (level > battery_limit) {
+                disable_charging();
+            }
+            if (level < battery_limit - 3) {
+                enable_charging();
+            }
+        }
     }
 
     public static void rootcheck(){
